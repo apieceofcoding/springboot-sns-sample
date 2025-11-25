@@ -1,7 +1,5 @@
-package com.apiece.springboot_sns_sample.service;
+package com.apiece.springboot_sns_sample.domain.user;
 
-import com.apiece.springboot_sns_sample.domain.User;
-import com.apiece.springboot_sns_sample.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +9,8 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public User signupUser(User user) {
+    public User signupUser(String username, String password) {
+        User user = User.create(username, password);
         return userRepository.save(user);
     }
 }
