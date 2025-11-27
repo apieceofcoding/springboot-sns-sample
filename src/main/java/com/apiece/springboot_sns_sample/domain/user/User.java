@@ -20,12 +20,10 @@ public class User {
 
     private String password;
 
-    private User(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
-
     public static User create(String username, String password) {
-        return new User(username, password);
+        User user = new User();
+        user.username = username;
+        user.password = password;
+        return user;
     }
 }

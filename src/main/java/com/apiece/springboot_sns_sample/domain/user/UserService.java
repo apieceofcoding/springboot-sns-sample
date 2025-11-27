@@ -1,6 +1,8 @@
 package com.apiece.springboot_sns_sample.domain.user;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -8,9 +10,16 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public User signupUser(String username, String password) {
-        User user = User.create(username, password);
+    public User signup(String username, String password) {
+        String encodedPassword = passwordEncoder.encode(password);
+        User user = User.create(username, encodedPassword);
         return userRepository.save(user);
+    }
+
+    public User getByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalStateException("User not found: " + username));
     }
 }

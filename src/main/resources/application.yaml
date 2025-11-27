@@ -2,7 +2,4 @@ spring:
   application:
     name: springboot-sns-sample
   jpa:
-    properties:
-      hibernate:
-        format_sql: true
     show-sql: true

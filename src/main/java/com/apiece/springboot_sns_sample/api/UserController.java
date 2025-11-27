@@ -1,5 +1,7 @@
-package com.apiece.springboot_sns_sample.api.user;
+package com.apiece.springboot_sns_sample.api;
 
+import com.apiece.springboot_sns_sample.api.user.UserSignupRequest;
+import com.apiece.springboot_sns_sample.api.user.UserSignupResponse;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import com.apiece.springboot_sns_sample.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +15,9 @@ public class UserController {
 
     private final UserService userService;
 
-    @PostMapping("/api/users/signup")
-    public User signupUser(@RequestBody UserSignupRequest request) {
-        return userService.signupUser(request.username(), request.password());
+    @PostMapping("/api/v1/users/signup")
+    public UserSignupResponse signupUser(@RequestBody UserSignupRequest request) {
+        User user = userService.signup(request.username(), request.password());
+        return UserSignupResponse.from(user);
     }
 }
