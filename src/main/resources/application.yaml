@@ -3,3 +3,12 @@ spring:
     name: springboot-sns-sample
   jpa:
     show-sql: true
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  session:
+    store-type: redis
+    timeout: 5s
+    redis:
+      namespace: spring:session
