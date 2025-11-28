@@ -16,7 +16,7 @@ import org.springframework.session.data.redis.config.annotation.web.http.EnableR
 import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 
 @Configuration
-@EnableRedisIndexedHttpSession(maxInactiveIntervalInSeconds = 5)
+@EnableRedisIndexedHttpSession(maxInactiveIntervalInSeconds = 1800)
 public class SecurityConfig {
 
     @Bean
@@ -25,9 +25,15 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(form -> form
-                        .loginProcessingUrl("/api/v1/login") // POST /api/v1/login Content-Type: application/x-www-form-urlencoded
+                        .loginProcessingUrl("/api/v1/login") // POST, Content-Type: application/x-www-form-urlencoded
                         .successHandler(authSuccessHandler)
                         .failureHandler((request, response, ex) -> response.setStatus(HttpStatus.UNAUTHORIZED.value()))
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/api/v1/logout") // POST
+                        .logoutSuccessHandler(((request, response, authentication) ->  response.setStatus(HttpStatus.OK.value())))
+                        .invalidateHttpSession(true)
+                        .deleteCookies("SESSION")
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)

@@ -9,6 +9,5 @@ spring:
       port: 6379
   session:
     store-type: redis
-    timeout: 5s
     redis:
       namespace: spring:session
