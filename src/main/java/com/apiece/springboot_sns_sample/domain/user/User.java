@@ -1,5 +1,6 @@
 package com.apiece.springboot_sns_sample.domain.user;
 
+import com.apiece.springboot_sns_sample.domain.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class User {
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
