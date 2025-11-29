@@ -2,10 +2,10 @@ package com.apiece.springboot_sns_sample.api;
 
 import com.apiece.springboot_sns_sample.api.user.UserSignupRequest;
 import com.apiece.springboot_sns_sample.api.user.UserResponse;
+import com.apiece.springboot_sns_sample.config.auth.AuthUser;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import com.apiece.springboot_sns_sample.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,9 +24,7 @@ public class UserController {
     }
 
     @GetMapping("/api/v1/users/me")
-    public UserResponse getMyInfo(Authentication authentication) {
-        String username = authentication.getName();
-        User user = userService.getByUsername(username);
+    public UserResponse getMyInfo(@AuthUser User user) {
         return UserResponse.from(user);
     }
 }

@@ -11,3 +11,9 @@ As the AI Agent, you **must not** perform any actions or make any changes to the
 - Do not touch git for anything other than checking status.
 - Do not use "@RequestMapping" and write out the full api endpoint.
 - DTOs should be written as records.
+- Do not configure Foreign Key (FK) constraints in the database. Use only @JoinColumn without FK constraints.
+- Use @Transactional only when absolutely necessary. Do not use it as a convention:
+  - Use when multiple write operations must be executed in a single transaction
+  - Use when Dirty Checking is needed (entity modification without explicit save)
+  - Do NOT use for single Repository operations (save, delete, find, etc. - they handle transactions automatically)
+  - Do NOT use for simple read operations
