@@ -14,7 +14,9 @@ public class FollowService {
 
     private final FollowRepository followRepository;
     private final UserService userService;
+    private final FollowCountService followCountService;
 
+    @Transactional
     public Follow follow(User follower, Long followeeId) {
         User followee = userService.getById(followeeId);
 
@@ -27,7 +29,12 @@ public class FollowService {
         }
 
         Follow follow = Follow.create(follower, followee);
-        return followRepository.save(follow);
+        Follow savedFollow = followRepository.save(follow);
+
+        followCountService.incrementFolloweesCount(follower);
+        followCountService.incrementFollowersCount(followee);
+
+        return savedFollow;
     }
 
     @Transactional
@@ -38,6 +45,9 @@ public class FollowService {
                 .orElseThrow(() -> new IllegalStateException("Not following this user"));
 
         follow.delete();
+
+        followCountService.decrementFolloweesCount(follower);
+        followCountService.decrementFollowersCount(followee);
     }
 
     public List<Follow> getFollowers(User user) {

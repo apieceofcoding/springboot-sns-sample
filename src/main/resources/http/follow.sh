@@ -30,9 +30,9 @@ curl -X GET "${BASE_URL}/api/v1/follows/followees" \
 
 echo -e "\n\n"
 
-# Get Follow Count
+# Get Follow Count (from follow_counts table)
 echo "=== Get Follow Count ==="
-curl -X GET "${BASE_URL}/api/v1/follows/count" \
+curl -X GET "${BASE_URL}/api/v1/follow_counts" \
   -b cookies.txt \
   -v
 

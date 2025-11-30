@@ -1,6 +1,5 @@
 package com.apiece.springboot_sns_sample.api;
 
-import com.apiece.springboot_sns_sample.api.follow.FollowCountResponse;
 import com.apiece.springboot_sns_sample.api.follow.FollowRequest;
 import com.apiece.springboot_sns_sample.api.follow.FollowResponse;
 import com.apiece.springboot_sns_sample.config.auth.AuthUser;
@@ -49,12 +48,5 @@ public class FollowController {
         return followees.stream()
                 .map(FollowResponse::from)
                 .toList();
-    }
-
-    @GetMapping("/api/v1/follows/count")
-    public FollowCountResponse getFollowCount(@AuthUser User user) {
-        long followersCount = followService.getFollowersCount(user);
-        long followeesCount = followService.getFolloweesCount(user);
-        return new FollowCountResponse(followersCount, followeesCount);
     }
 }
