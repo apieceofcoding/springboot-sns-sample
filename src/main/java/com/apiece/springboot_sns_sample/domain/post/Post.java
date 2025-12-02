@@ -40,12 +40,16 @@ public class Post extends BaseEntity {
     @Column(nullable = false)
     private Integer likeCount = 0;
 
+    @Column(nullable = false)
+    private Long viewCount = 0L;
+
     public static Post create(String content, User user) {
         Post post = new Post();
         post.content = content;
         post.user = user;
         post.repostCount = 0;
         post.likeCount = 0;
+        post.viewCount = 0L;
         return post;
     }
 
@@ -88,5 +92,9 @@ public class Post extends BaseEntity {
         if (this.likeCount > 0) {
             this.likeCount--;
         }
+    }
+
+    public void updateViewCount(Long viewCount) {
+        this.viewCount = viewCount;
     }
 }

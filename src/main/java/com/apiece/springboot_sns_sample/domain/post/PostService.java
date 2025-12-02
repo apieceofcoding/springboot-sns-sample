@@ -1,5 +1,6 @@
 package com.apiece.springboot_sns_sample.domain.post;
 
+import com.apiece.springboot_sns_sample.domain.postview.PostViewService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -12,19 +13,28 @@ import java.util.List;
 public class PostService {
 
     private final PostRepository postRepository;
+    private final PostViewService postViewService;
 
     public Post createPost(String content, User user) {
         Post post = Post.create(content, user);
         return postRepository.save(post);
     }
 
-    public List<Post> getAllPosts() {
-        return postRepository.findAllByDeletedAtIsNullOrderByCreatedAtDesc();
+    public List<PostWithViewCount> getAllPosts() {
+        List<Post> posts = postRepository.findAllByDeletedAtIsNullOrderByCreatedAtDesc();
+        return enrichWithViewCount(posts);
     }
 
     public Post getPostById(Long id) {
         return postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new IllegalArgumentException("Post not found: " + id));
+    }
+
+    public PostWithViewCount getPostByIdWithPostViewIncrement(Long id) {
+        Post post = getPostById(id);
+        postViewService.incrementPostView(id);
+        Long viewCount = postViewService.getPostView(id);
+        return new PostWithViewCount(post, viewCount);
     }
 
     @Transactional
@@ -54,11 +64,24 @@ public class PostService {
         postRepository.save(post);
     }
 
-    public List<Post> getPostsByUserId(Long userId) {
-        return postRepository.findByUserIdAndParentIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
+    public List<PostWithViewCount> getPostsByUserId(Long userId) {
+        List<Post> posts = postRepository.findByUserIdAndParentIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
+        return enrichWithViewCount(posts);
     }
 
-    public List<Post> getRepliesByUserId(Long userId) {
-        return postRepository.findByUserIdAndParentIsNotNullAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
+    public List<PostWithViewCount> getRepliesByUserId(Long userId) {
+        List<Post> posts = postRepository.findByUserIdAndParentIsNotNullAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
+        return enrichWithViewCount(posts);
+    }
+
+    public PostWithViewCount enrichWithViewCount(Post post) {
+        Long viewCount = postViewService.getPostView(post.getId());
+        return new PostWithViewCount(post, viewCount);
+    }
+
+    public List<PostWithViewCount> enrichWithViewCount(List<Post> posts) {
+        return posts.stream()
+                .map(this::enrichWithViewCount)
+                .toList();
     }
 }

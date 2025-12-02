@@ -1,6 +1,7 @@
 package com.apiece.springboot_sns_sample.api.reply;
 
 import com.apiece.springboot_sns_sample.domain.post.Post;
+import com.apiece.springboot_sns_sample.domain.post.PostWithViewCount;
 
 import java.time.LocalDateTime;
 
@@ -23,5 +24,9 @@ public record ReplyResponse(
                 post.getCreatedAt(),
                 post.getModifiedAt()
         );
+    }
+
+    public static ReplyResponse from(PostWithViewCount postWithViewCount) {
+        return from(postWithViewCount.getPost());
     }
 }

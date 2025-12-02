@@ -6,6 +6,7 @@ import com.apiece.springboot_sns_sample.api.post.PostUpdateRequest;
 import com.apiece.springboot_sns_sample.config.auth.AuthUser;
 import com.apiece.springboot_sns_sample.domain.post.Post;
 import com.apiece.springboot_sns_sample.domain.post.PostService;
+import com.apiece.springboot_sns_sample.domain.post.PostWithViewCount;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -36,8 +37,8 @@ public class PostController {
 
     @GetMapping("/api/v1/posts/{id}")
     public PostResponse getPostById(@PathVariable Long id) {
-        Post post = postService.getPostById(id);
-        return PostResponse.from(post);
+        PostWithViewCount postWithViewCount = postService.getPostByIdWithPostViewIncrement(id);
+        return PostResponse.from(postWithViewCount);
     }
 
     @PutMapping("/api/v1/posts/{id}")

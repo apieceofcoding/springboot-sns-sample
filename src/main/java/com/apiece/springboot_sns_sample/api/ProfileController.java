@@ -4,8 +4,8 @@ import com.apiece.springboot_sns_sample.api.post.PostResponse;
 import com.apiece.springboot_sns_sample.api.reply.ReplyResponse;
 import com.apiece.springboot_sns_sample.config.auth.AuthUser;
 import com.apiece.springboot_sns_sample.domain.like.LikeService;
-import com.apiece.springboot_sns_sample.domain.post.Post;
 import com.apiece.springboot_sns_sample.domain.post.PostService;
+import com.apiece.springboot_sns_sample.domain.post.PostWithViewCount;
 import com.apiece.springboot_sns_sample.domain.repost.RepostService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
@@ -26,13 +26,15 @@ public class ProfileController {
 
     @GetMapping("/api/v1/profile/posts")
     public List<PostResponse> getMyPosts(@AuthUser User user) {
-        List<Post> posts = new ArrayList<>(postService.getPostsByUserId(user.getId()));
+        List<PostWithViewCount> postsWithViewCount = new ArrayList<>(postService.getPostsByUserId(user.getId()));
+
         repostService.getRepostsByUserId(user.getId()).forEach(repost -> {
-            posts.add(repost.getPost());
+            PostWithViewCount postWithViewCount = postService.enrichWithViewCount(repost.getPost());
+            postsWithViewCount.add(postWithViewCount);
         });
 
-        return posts.stream()
-                .sorted(Comparator.comparing(Post::getCreatedAt).reversed())
+        return postsWithViewCount.stream()
+                .sorted(Comparator.comparing(pwc -> pwc.getPost().getCreatedAt(), Comparator.reverseOrder()))
                 .map(PostResponse::from)
                 .toList();
     }
@@ -47,7 +49,8 @@ public class ProfileController {
     @GetMapping("/api/v1/profile/likes")
     public List<PostResponse> getMyLikedPosts(@AuthUser User user) {
         return likeService.getLikesByUserId(user.getId()).stream()
-                .map(like -> PostResponse.from(like.getPost()))
+                .map(like -> postService.enrichWithViewCount(like.getPost()))
+                .map(PostResponse::from)
                 .toList();
     }
 }

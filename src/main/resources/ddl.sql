@@ -39,6 +39,7 @@ CREATE TABLE posts (
     quote_id     BIGINT,
     repost_count INTEGER NOT NULL DEFAULT 0,
     like_count   INTEGER NOT NULL DEFAULT 0,
+    view_count   BIGINT NOT NULL DEFAULT 0,
     created_at   TIMESTAMP(6) NOT NULL,
     modified_at  TIMESTAMP(6) NOT NULL,
     deleted_at   TIMESTAMP(6)
