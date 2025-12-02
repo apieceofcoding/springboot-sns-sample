@@ -9,6 +9,8 @@ public record PostResponse(
         String content,
         Long userId,
         String username,
+        Integer repostCount,
+        Integer likeCount,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
 ) {
@@ -18,6 +20,8 @@ public record PostResponse(
                 post.getContent(),
                 post.getUser().getId(),
                 post.getUser().getUsername(),
+                post.getRepostCount(),
+                post.getLikeCount(),
                 post.getCreatedAt(),
                 post.getModifiedAt()
         );

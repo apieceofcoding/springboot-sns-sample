@@ -34,10 +34,18 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "quote_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Post quote;
 
+    @Column(nullable = false)
+    private Integer repostCount = 0;
+
+    @Column(nullable = false)
+    private Integer likeCount = 0;
+
     public static Post create(String content, User user) {
         Post post = new Post();
         post.content = content;
         post.user = user;
+        post.repostCount = 0;
+        post.likeCount = 0;
         return post;
     }
 
@@ -60,5 +68,25 @@ public class Post extends BaseEntity {
     public boolean isEditExpired() {
         LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
         return this.getCreatedAt().isBefore(oneHourAgo);
+    }
+
+    public void incrementRepostCount() {
+        this.repostCount++;
+    }
+
+    public void decrementRepostCount() {
+        if (this.repostCount > 0) {
+            this.repostCount--;
+        }
+    }
+
+    public void incrementLikeCount() {
+        this.likeCount++;
+    }
+
+    public void decrementLikeCount() {
+        if (this.likeCount > 0) {
+            this.likeCount--;
+        }
     }
 }
