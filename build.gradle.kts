@@ -27,6 +27,7 @@ dependencies {
 	implementation("org.springframework.session:spring-session-data-redis")
 	implementation("com.fasterxml.jackson.core:jackson-databind")
 	implementation("org.bouncycastle:bcprov-jdk18on:1.82")
+	implementation("software.amazon.awssdk:s3:2.29.26")
 
 	runtimeOnly("com.h2database:h2")
 	runtimeOnly("org.postgresql:postgresql")

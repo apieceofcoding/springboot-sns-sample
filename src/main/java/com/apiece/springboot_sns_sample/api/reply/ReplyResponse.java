@@ -27,6 +27,6 @@ public record ReplyResponse(
     }
 
     public static ReplyResponse from(PostWithViewCount postWithViewCount) {
-        return from(postWithViewCount.getPost());
+        return from(postWithViewCount.post());
     }
 }

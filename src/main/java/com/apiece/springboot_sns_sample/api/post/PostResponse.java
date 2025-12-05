@@ -4,6 +4,7 @@ import com.apiece.springboot_sns_sample.domain.post.Post;
 import com.apiece.springboot_sns_sample.domain.post.PostWithViewCount;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record PostResponse(
         Long id,
@@ -13,6 +14,7 @@ public record PostResponse(
         Integer repostCount,
         Integer likeCount,
         Long viewCount,
+        List<Long> mediaIds,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
 ) {
@@ -25,13 +27,14 @@ public record PostResponse(
                 post.getRepostCount(),
                 post.getLikeCount(),
                 post.getViewCount(),
+                post.getMediaIds(),
                 post.getCreatedAt(),
                 post.getModifiedAt()
         );
     }
 
     public static PostResponse from(PostWithViewCount postWithViewCount) {
-        Post post = postWithViewCount.getPost();
+        Post post = postWithViewCount.post();
         return new PostResponse(
                 post.getId(),
                 post.getContent(),
@@ -39,7 +42,8 @@ public record PostResponse(
                 post.getUser().getUsername(),
                 post.getRepostCount(),
                 post.getLikeCount(),
-                postWithViewCount.getViewCount(),
+                postWithViewCount.viewCount(),
+                post.getMediaIds(),
                 post.getCreatedAt(),
                 post.getModifiedAt()
         );

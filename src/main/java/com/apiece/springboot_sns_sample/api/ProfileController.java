@@ -34,7 +34,7 @@ public class ProfileController {
         });
 
         return postsWithViewCount.stream()
-                .sorted(Comparator.comparing(pwc -> pwc.getPost().getCreatedAt(), Comparator.reverseOrder()))
+                .sorted(Comparator.comparing(pwc -> pwc.post().getCreatedAt(), Comparator.reverseOrder()))
                 .map(PostResponse::from)
                 .toList();
     }

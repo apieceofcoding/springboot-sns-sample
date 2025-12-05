@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
@@ -43,24 +44,28 @@ public class Post extends BaseEntity {
     @Column(nullable = false)
     private Long viewCount = 0L;
 
-    public static Post create(String content, User user) {
+    @Column(name = "media_ids", columnDefinition = "bigint[]")
+    private List<Long> mediaIds;
+
+    public static Post create(String content, User user, List<Long> mediaIds) {
         Post post = new Post();
         post.content = content;
         post.user = user;
         post.repostCount = 0;
         post.likeCount = 0;
         post.viewCount = 0L;
+        post.mediaIds = mediaIds;
         return post;
     }
 
     public static Post createReply(String content, User user, Post parent) {
-        Post post = create(content, user);
+        Post post = create(content, user, null);
         post.parent = parent;
         return post;
     }
 
     public static Post createQuote(String content, User user, Post quote) {
-        Post post = create(content, user);
+        Post post = create(content, user, null);
         post.quote = quote;
         return post;
     }

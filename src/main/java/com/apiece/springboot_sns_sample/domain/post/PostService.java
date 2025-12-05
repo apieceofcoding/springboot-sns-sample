@@ -1,5 +1,7 @@
 package com.apiece.springboot_sns_sample.domain.post;
 
+import com.apiece.springboot_sns_sample.domain.media.Media;
+import com.apiece.springboot_sns_sample.domain.media.MediaRepository;
 import com.apiece.springboot_sns_sample.domain.postview.PostViewService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +16,25 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final PostViewService postViewService;
+    private final MediaRepository mediaRepository;
 
-    public Post createPost(String content, User user) {
-        Post post = Post.create(content, user);
+    public Post createPost(String content, List<Long> mediaIds, User user) {
+        if (mediaIds != null && !mediaIds.isEmpty()) {
+            List<Media> mediaList = mediaRepository.findAllById(mediaIds);
+
+            if (mediaList.size() != mediaIds.size()) {
+                throw new IllegalArgumentException("Some media not found");
+            }
+
+            mediaList.forEach(media -> {
+                if (!media.getUserId().equals(user.getId())) {
+                    throw new IllegalArgumentException("You are not authorized to use this media: " + media.getId());
+                }
+            });
+        }
+
+        Post post = Post.create(content, user, mediaIds);
+
         return postRepository.save(post);
     }
 

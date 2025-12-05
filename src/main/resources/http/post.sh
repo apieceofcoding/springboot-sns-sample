@@ -14,6 +14,19 @@ curl -X POST "${BASE_URL}/api/v1/posts" \
 
 echo -e "\n\n"
 
+# Create Post with Media
+echo "=== Create Post with Media ==="
+curl -X POST "${BASE_URL}/api/v1/posts" \
+  -H "Content-Type: application/json" \
+  -b cookies.txt \
+  -d '{
+    "content": "This is my post with media!",
+    "mediaIds": [1, 2]
+  }' \
+  -v
+
+echo -e "\n\n"
+
 # Get All Posts
 echo "=== Get All Posts ==="
 curl -X GET "${BASE_URL}/api/v1/posts" \

@@ -24,7 +24,7 @@ public class PostController {
             @RequestBody PostCreateRequest request,
             @AuthUser User user
     ) {
-        Post post = postService.createPost(request.content(), user);
+        Post post = postService.createPost(request.content(), request.mediaIds(), user);
         return PostResponse.from(post);
     }
 
