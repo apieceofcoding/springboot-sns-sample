@@ -3,9 +3,11 @@ package com.apiece.springboot_sns_sample.api;
 import com.apiece.springboot_sns_sample.api.media.MediaInitRequest;
 import com.apiece.springboot_sns_sample.api.media.MediaInitResponse;
 import com.apiece.springboot_sns_sample.api.media.MediaResponse;
+import com.apiece.springboot_sns_sample.api.media.MediaUploadedRequest;
+import com.apiece.springboot_sns_sample.api.media.PresignedUrlResponse;
 import com.apiece.springboot_sns_sample.config.auth.AuthUser;
 import com.apiece.springboot_sns_sample.domain.media.Media;
-import com.apiece.springboot_sns_sample.domain.media.MediaPresignedUrl;
+import com.apiece.springboot_sns_sample.domain.media.PresignedUrl;
 import com.apiece.springboot_sns_sample.domain.media.MediaService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
@@ -24,14 +26,29 @@ public class MediaController {
             @RequestBody MediaInitRequest request,
             @AuthUser User user
     ) {
-        MediaPresignedUrl result = mediaService.initMedia(request.mediaType(), user);
-        return MediaInitResponse.from(result.media(), result.presignedUrl());
+        PresignedUrl result = mediaService.initMedia(request.mediaType(), request.fileSize(), user);
+        return MediaInitResponse.from(result);
+    }
+
+    @PostMapping("/api/v1/media/uploaded")
+    public MediaResponse mediaUploaded(
+            @RequestBody MediaUploadedRequest request,
+            @AuthUser User user
+    ) {
+        Media media = mediaService.mediaUploaded(request.mediaId(), request.parts(), user);
+        return MediaResponse.from(media);
     }
 
     @GetMapping("/api/v1/media/{id}")
     public MediaResponse getMediaById(@PathVariable Long id) {
         Media media = mediaService.getMediaById(id);
         return MediaResponse.from(media);
+    }
+
+    @GetMapping("/api/v1/media/{id}/presigned-url")
+    public PresignedUrlResponse getPresignedUrl(@PathVariable Long id) {
+        String presignedUrl = mediaService.getPresignedUrl(id);
+        return new PresignedUrlResponse(presignedUrl);
     }
 
     @GetMapping("/api/v1/users/{userId}/media")

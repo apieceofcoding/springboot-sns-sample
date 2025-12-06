@@ -34,6 +34,9 @@ public class Media extends BaseEntity {
     @Column(name = "user_id")
     private Long userId;
 
+    @Column(length = 500)
+    private String uploadId;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "json")
     private Map<String, Object> attributes;
@@ -47,15 +50,13 @@ public class Media extends BaseEntity {
         return media;
     }
 
+    public static Media create(MediaType mediaType, String path, Long userId, String uploadId) {
+        Media media = create(mediaType, path, userId);
+        media.uploadId = uploadId;
+        return media;
+    }
+
     public void updateStatus(MediaStatus status) {
         this.status = status;
-    }
-
-    public void updatePath(String path) {
-        this.path = path;
-    }
-
-    public void updateAttributes(Map<String, Object> attributes) {
-        this.attributes = attributes;
     }
 }

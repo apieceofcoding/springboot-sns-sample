@@ -83,6 +83,7 @@ CREATE TABLE media (
     path        VARCHAR(2000) NOT NULL,
     status      VARCHAR(255) NOT NULL,
     user_id     BIGINT,
+    upload_id   VARCHAR(500),
     attributes  JSON,
     created_at  TIMESTAMP(6) NOT NULL,
     modified_at TIMESTAMP(6) NOT NULL,
