@@ -6,6 +6,7 @@ import com.apiece.springboot_sns_sample.config.auth.AuthUser;
 import com.apiece.springboot_sns_sample.domain.follow.Follow;
 import com.apiece.springboot_sns_sample.domain.follow.FollowService;
 import com.apiece.springboot_sns_sample.domain.user.User;
+import com.apiece.springboot_sns_sample.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ import java.util.List;
 public class FollowController {
 
     private final FollowService followService;
+    private final UserService userService;
 
     @PostMapping("/api/v1/follows")
     public FollowResponse follow(
@@ -23,7 +25,7 @@ public class FollowController {
             @AuthUser User user
     ) {
         Follow follow = followService.follow(user, request.followeeId());
-        return FollowResponse.from(follow);
+        return FollowResponse.from(follow, userService);
     }
 
     @DeleteMapping("/api/v1/follows")
@@ -38,7 +40,7 @@ public class FollowController {
     public List<FollowResponse> getFollowers(@AuthUser User user) {
         List<Follow> followers = followService.getFollowers(user);
         return followers.stream()
-                .map(FollowResponse::from)
+                .map(follow -> FollowResponse.from(follow, userService))
                 .toList();
     }
 
@@ -46,7 +48,7 @@ public class FollowController {
     public List<FollowResponse> getFollowees(@AuthUser User user) {
         List<Follow> followees = followService.getFollowees(user);
         return followees.stream()
-                .map(FollowResponse::from)
+                .map(follow -> FollowResponse.from(follow, userService))
                 .toList();
     }
 }

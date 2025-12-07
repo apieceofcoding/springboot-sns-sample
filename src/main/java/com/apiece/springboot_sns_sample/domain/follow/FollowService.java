@@ -24,11 +24,11 @@ public class FollowService {
             throw new IllegalArgumentException("Cannot follow yourself");
         }
 
-        if (followRepository.existsByFollowerAndFolloweeAndDeletedAtIsNull(follower, followee)) {
+        if (followRepository.existsByFollowerIdAndFolloweeIdAndDeletedAtIsNull(follower.getId(), followeeId)) {
             throw new IllegalStateException("Already following this user");
         }
 
-        Follow follow = Follow.create(follower, followee);
+        Follow follow = Follow.create(follower.getId(), followeeId);
         Follow savedFollow = followRepository.save(follow);
 
         followCountService.incrementFolloweesCount(follower);
@@ -41,7 +41,7 @@ public class FollowService {
     public void unfollow(User follower, Long followeeId) {
         User followee = userService.getById(followeeId);
 
-        Follow follow = followRepository.findByFollowerAndFolloweeAndDeletedAtIsNull(follower, followee)
+        Follow follow = followRepository.findByFollowerIdAndFolloweeIdAndDeletedAtIsNull(follower.getId(), followeeId)
                 .orElseThrow(() -> new IllegalStateException("Not following this user"));
 
         follow.delete();
@@ -51,18 +51,10 @@ public class FollowService {
     }
 
     public List<Follow> getFollowers(User user) {
-        return followRepository.findByFolloweeAndDeletedAtIsNull(user);
+        return followRepository.findByFolloweeIdAndDeletedAtIsNull(user.getId());
     }
 
     public List<Follow> getFollowees(User user) {
-        return followRepository.findByFollowerAndDeletedAtIsNull(user);
-    }
-
-    public long getFollowersCount(User user) {
-        return followRepository.countByFolloweeAndDeletedAtIsNull(user);
-    }
-
-    public long getFolloweesCount(User user) {
-        return followRepository.countByFollowerAndDeletedAtIsNull(user);
+        return followRepository.findByFollowerIdAndDeletedAtIsNull(user.getId());
     }
 }

@@ -1,7 +1,6 @@
 package com.apiece.springboot_sns_sample.domain.follow;
 
 import com.apiece.springboot_sns_sample.domain.base.BaseEntity;
-import com.apiece.springboot_sns_sample.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,18 +16,16 @@ public class Follow extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "follower_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private User follower;
+    @Column(name = "follower_id", nullable = false)
+    private Long followerId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "followee_id", nullable = false, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private User followee;
+    @Column(name = "followee_id", nullable = false)
+    private Long followeeId;
 
-    public static Follow create(User follower, User followee) {
+    public static Follow create(Long followerId, Long followeeId) {
         Follow follow = new Follow();
-        follow.follower = follower;
-        follow.followee = followee;
+        follow.followerId = followerId;
+        follow.followeeId = followeeId;
         return follow;
     }
 }

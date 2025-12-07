@@ -1,7 +1,8 @@
 package com.apiece.springboot_sns_sample.domain.repost;
 
 import com.apiece.springboot_sns_sample.domain.post.Post;
-import com.apiece.springboot_sns_sample.domain.post.PostService;
+import com.apiece.springboot_sns_sample.domain.post.PostRepository;
+import com.apiece.springboot_sns_sample.domain.timeline.TimelineService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,45 +14,54 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RepostService {
 
-    private final RepostRepository repostRepository;
-    private final PostService postService;
+    private final PostRepository postRepository;
+    private final TimelineService timelineService;
 
     @Transactional
-    public Repost createRepost(Long postId, User user) {
-        Post post = postService.getPostById(postId);
+    public Post createRepost(Long repostId, User user) {
+        Post originalPost = postRepository.findByIdAndDeletedAtIsNull(repostId)
+                .orElseThrow(() -> new IllegalArgumentException("Post for repost not found: " + repostId));
 
-        if (repostRepository.existsByUserIdAndPostIdAndDeletedAtIsNull(user.getId(), postId)) {
+        if (postRepository.existsByUserIdAndRepostIdAndDeletedAtIsNull(user.getId(), repostId)) {
             throw new IllegalArgumentException("You have already reposted this post");
         }
 
-        post.incrementRepostCount();
-        Repost repost = Repost.create(user, post);
-        return repostRepository.save(repost);
+        originalPost.incrementRepostCount();
+        Post repost = Post.createRepost(user, repostId);
+        Post savedRepost = postRepository.save(repost);
+
+        timelineService.fanOutToFollowers(savedRepost.getId(), user);
+
+        return savedRepost;
     }
 
-    public List<Repost> getAllReposts() {
-        return repostRepository.findAllByDeletedAtIsNullOrderByCreatedAtDesc();
+    public List<Post> getAllReposts() {
+        return postRepository.findAllByDeletedAtIsNullOrderByCreatedAtDesc().stream()
+                .filter(post -> post.getRepostId() != null)
+                .toList();
     }
 
-    public Repost getRepostById(Long id) {
-        return repostRepository.findByIdAndDeletedAtIsNull(id)
+    public Post getRepostById(Long id) {
+        Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new IllegalArgumentException("Repost not found: " + id));
+        if (post.getRepostId() == null) {
+            throw new IllegalArgumentException("This is not a repost");
+        }
+        return post;
     }
 
     @Transactional
     public void deleteRepost(Long id, User user) {
-        Repost repost = getRepostById(id);
+        Post repost = getRepostById(id);
 
         if (!repost.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("You are not authorized to delete this repost");
         }
 
-        repost.getPost().decrementRepostCount();
+        Post originalPost = postRepository.findByIdAndDeletedAtIsNull(repost.getRepostId())
+                .orElseThrow(() -> new IllegalArgumentException("Original post not found: " + repost.getRepostId()));
+        originalPost.decrementRepostCount();
         repost.delete();
-        repostRepository.save(repost);
-    }
-
-    public List<Repost> getRepostsByUserId(Long userId) {
-        return repostRepository.findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
+        postRepository.save(repost);
     }
 }

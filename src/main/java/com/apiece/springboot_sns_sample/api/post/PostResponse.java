@@ -15,6 +15,9 @@ public record PostResponse(
         Integer likeCount,
         Long viewCount,
         List<Long> mediaIds,
+        Long parentId,
+        Long quoteId,
+        Long repostId,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
 ) {
@@ -28,6 +31,9 @@ public record PostResponse(
                 post.getLikeCount(),
                 post.getViewCount(),
                 post.getMediaIds(),
+                post.getParentId(),
+                post.getQuoteId(),
+                post.getRepostId(),
                 post.getCreatedAt(),
                 post.getModifiedAt()
         );
@@ -44,6 +50,9 @@ public record PostResponse(
                 post.getLikeCount(),
                 postWithViewCount.viewCount(),
                 post.getMediaIds(),
+                post.getParentId(),
+                post.getQuoteId(),
+                post.getRepostId(),
                 post.getCreatedAt(),
                 post.getModifiedAt()
         );

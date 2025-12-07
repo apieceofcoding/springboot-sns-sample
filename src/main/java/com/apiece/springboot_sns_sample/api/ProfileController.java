@@ -6,35 +6,30 @@ import com.apiece.springboot_sns_sample.config.auth.AuthUser;
 import com.apiece.springboot_sns_sample.domain.like.LikeService;
 import com.apiece.springboot_sns_sample.domain.post.PostService;
 import com.apiece.springboot_sns_sample.domain.post.PostWithViewCount;
-import com.apiece.springboot_sns_sample.domain.repost.RepostService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.reverseOrder;
 
 @RestController
 @RequiredArgsConstructor
 public class ProfileController {
 
     private final PostService postService;
-    private final RepostService repostService;
     private final LikeService likeService;
 
     @GetMapping("/api/v1/profile/posts")
     public List<PostResponse> getMyPosts(@AuthUser User user) {
         List<PostWithViewCount> postsWithViewCount = new ArrayList<>(postService.getPostsByUserId(user.getId()));
 
-        repostService.getRepostsByUserId(user.getId()).forEach(repost -> {
-            PostWithViewCount postWithViewCount = postService.enrichWithViewCount(repost.getPost());
-            postsWithViewCount.add(postWithViewCount);
-        });
-
         return postsWithViewCount.stream()
-                .sorted(Comparator.comparing(pwc -> pwc.post().getCreatedAt(), Comparator.reverseOrder()))
+                .sorted(comparing(pvc -> pvc.post().getCreatedAt(), reverseOrder()))
                 .map(PostResponse::from)
                 .toList();
     }

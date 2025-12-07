@@ -2,6 +2,7 @@ package com.apiece.springboot_sns_sample.domain.reply;
 
 import com.apiece.springboot_sns_sample.domain.post.Post;
 import com.apiece.springboot_sns_sample.domain.post.PostRepository;
+import com.apiece.springboot_sns_sample.domain.timeline.TimelineService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,13 +15,18 @@ import java.util.List;
 public class ReplyService {
 
     private final PostRepository postRepository;
+    private final TimelineService timelineService;
 
     public Post createReply(Long parentId, String content, User user) {
-        Post parent = postRepository.findByIdAndDeletedAtIsNull(parentId)
+        postRepository.findByIdAndDeletedAtIsNull(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("Parent post not found: " + parentId));
 
-        Post reply = Post.createReply(content, user, parent);
-        return postRepository.save(reply);
+        Post reply = Post.createReply(content, user, parentId);
+        Post savedReply = postRepository.save(reply);
+
+        timelineService.fanOutToFollowers(savedReply.getId(), user);
+
+        return savedReply;
     }
 
     public List<Post> getRepliesByParentId(Long parentId) {
@@ -32,7 +38,7 @@ public class ReplyService {
         Post reply = postRepository.findByIdAndDeletedAtIsNull(replyId)
                 .orElseThrow(() -> new IllegalArgumentException("Reply not found: " + replyId));
 
-        if (reply.getParent() == null) {
+        if (reply.getParentId() == null) {
             throw new IllegalArgumentException("This is not a reply");
         }
 
@@ -52,7 +58,7 @@ public class ReplyService {
         Post reply = postRepository.findByIdAndDeletedAtIsNull(replyId)
                 .orElseThrow(() -> new IllegalArgumentException("Reply not found: " + replyId));
 
-        if (reply.getParent() == null) {
+        if (reply.getParentId() == null) {
             throw new IllegalArgumentException("This is not a reply");
         }
 

@@ -11,40 +11,45 @@ public class FollowCountService {
 
     private final FollowCountRepository followCountRepository;
 
-    public FollowCount getOrCreateFollowCount(User user) {
-        return followCountRepository.findByUserAndDeletedAtIsNull(user)
+    public FollowCount getOrCreateFollowCount(Long userId) {
+        return followCountRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .orElseGet(() -> {
-                    FollowCount followCount = FollowCount.create(user);
+                    FollowCount followCount = FollowCount.create(userId);
                     return followCountRepository.save(followCount);
                 });
     }
 
     public FollowCount getFollowCount(User user) {
-        return followCountRepository.findByUserAndDeletedAtIsNull(user)
+        return followCountRepository.findByUserIdAndDeletedAtIsNull(user.getId())
+                .orElseThrow(() -> new IllegalStateException("FollowCount not found for user"));
+    }
+
+    public FollowCount getFollowCount(Long userId) {
+        return followCountRepository.findByUserIdAndDeletedAtIsNull(userId)
                 .orElseThrow(() -> new IllegalStateException("FollowCount not found for user"));
     }
 
     @Transactional
     public void incrementFollowersCount(User user) {
-        FollowCount followCount = getOrCreateFollowCount(user);
+        FollowCount followCount = getOrCreateFollowCount(user.getId());
         followCount.incrementFollowersCount();
     }
 
     @Transactional
     public void decrementFollowersCount(User user) {
-        FollowCount followCount = getOrCreateFollowCount(user);
+        FollowCount followCount = getOrCreateFollowCount(user.getId());
         followCount.decrementFollowersCount();
     }
 
     @Transactional
     public void incrementFolloweesCount(User user) {
-        FollowCount followCount = getOrCreateFollowCount(user);
+        FollowCount followCount = getOrCreateFollowCount(user.getId());
         followCount.incrementFolloweesCount();
     }
 
     @Transactional
     public void decrementFolloweesCount(User user) {
-        FollowCount followCount = getOrCreateFollowCount(user);
+        FollowCount followCount = getOrCreateFollowCount(user.getId());
         followCount.decrementFolloweesCount();
     }
 }

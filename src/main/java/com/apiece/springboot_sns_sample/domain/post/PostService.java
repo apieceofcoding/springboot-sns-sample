@@ -3,6 +3,7 @@ package com.apiece.springboot_sns_sample.domain.post;
 import com.apiece.springboot_sns_sample.domain.media.Media;
 import com.apiece.springboot_sns_sample.domain.media.MediaRepository;
 import com.apiece.springboot_sns_sample.domain.postview.PostViewService;
+import com.apiece.springboot_sns_sample.domain.timeline.TimelineService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final PostViewService postViewService;
     private final MediaRepository mediaRepository;
+    private final TimelineService timelineService;
 
     public Post createPost(String content, List<Long> mediaIds, User user) {
         if (mediaIds != null && !mediaIds.isEmpty()) {
@@ -34,8 +36,11 @@ public class PostService {
         }
 
         Post post = Post.create(content, user, mediaIds);
+        Post savedPost = postRepository.save(post);
 
-        return postRepository.save(post);
+        timelineService.fanOutToFollowers(savedPost.getId(), user);
+
+        return savedPost;
     }
 
     public List<PostWithViewCount> getAllPosts() {
@@ -83,12 +88,12 @@ public class PostService {
     }
 
     public List<PostWithViewCount> getPostsByUserId(Long userId) {
-        List<Post> posts = postRepository.findByUserIdAndParentIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
+        List<Post> posts = postRepository.findByUserIdAndParentIdIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
         return enrichWithViewCount(posts);
     }
 
     public List<PostWithViewCount> getRepliesByUserId(Long userId) {
-        List<Post> posts = postRepository.findByUserIdAndParentIsNotNullAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
+        List<Post> posts = postRepository.findByUserIdAndParentIdIsNotNullAndDeletedAtIsNullOrderByCreatedAtDesc(userId);
         return enrichWithViewCount(posts);
     }
 

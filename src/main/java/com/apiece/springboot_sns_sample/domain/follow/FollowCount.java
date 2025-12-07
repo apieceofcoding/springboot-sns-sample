@@ -1,7 +1,6 @@
 package com.apiece.springboot_sns_sample.domain.follow;
 
 import com.apiece.springboot_sns_sample.domain.base.BaseEntity;
-import com.apiece.springboot_sns_sample.domain.user.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,9 +16,8 @@ public class FollowCount extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true, foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
-    private User user;
+    @Column(name = "user_id", nullable = false, unique = true)
+    private Long userId;
 
     @Column(name = "followers_count", nullable = false)
     private Long followersCount;
@@ -27,9 +25,9 @@ public class FollowCount extends BaseEntity {
     @Column(name = "followees_count", nullable = false)
     private Long followeesCount;
 
-    public static FollowCount create(User user) {
+    public static FollowCount create(Long userId) {
         FollowCount followCount = new FollowCount();
-        followCount.user = user;
+        followCount.userId = userId;
         followCount.followersCount = 0L;
         followCount.followeesCount = 0L;
         return followCount;
@@ -53,5 +51,9 @@ public class FollowCount extends BaseEntity {
         if (this.followeesCount > 0) {
             this.followeesCount--;
         }
+    }
+
+    public boolean isCeleb() {
+        return this.followersCount >= 10000;
     }
 }

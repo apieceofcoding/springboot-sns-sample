@@ -11,9 +11,15 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     Optional<Post> findByIdAndDeletedAtIsNull(Long id);
 
+    List<Post> findAllByIdInAndDeletedAtIsNull(List<Long> ids);
+
     List<Post> findByParentIdAndDeletedAtIsNullOrderByCreatedAtAsc(Long parentId);
 
-    List<Post> findByUserIdAndParentIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
+    List<Post> findByUserIdAndParentIdIsNullAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
 
-    List<Post> findByUserIdAndParentIsNotNullAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
+    List<Post> findByUserIdAndParentIdIsNotNullAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
+
+    boolean existsByUserIdAndQuoteIdAndDeletedAtIsNull(Long userId, Long quoteId);
+
+    boolean existsByUserIdAndRepostIdAndDeletedAtIsNull(Long userId, Long repostId);
 }

@@ -27,13 +27,14 @@ public class Post extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private Post parent;
+    @Column(name = "parent_id")
+    private Long parentId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "quote_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    private Post quote;
+    @Column(name = "quote_id")
+    private Long quoteId;
+
+    @Column(name = "repost_id")
+    private Long repostId;
 
     @Column(nullable = false)
     private Integer repostCount = 0;
@@ -58,15 +59,21 @@ public class Post extends BaseEntity {
         return post;
     }
 
-    public static Post createReply(String content, User user, Post parent) {
+    public static Post createReply(String content, User user, Long parentId) {
         Post post = create(content, user, null);
-        post.parent = parent;
+        post.parentId = parentId;
         return post;
     }
 
-    public static Post createQuote(String content, User user, Post quote) {
+    public static Post createQuote(String content, User user, Long quoteId) {
         Post post = create(content, user, null);
-        post.quote = quote;
+        post.quoteId = quoteId;
+        return post;
+    }
+
+    public static Post createRepost(User user, Long repostId) {
+        Post post = create("", user, null);
+        post.repostId = repostId;
         return post;
     }
 

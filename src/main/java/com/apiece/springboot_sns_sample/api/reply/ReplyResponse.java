@@ -20,7 +20,7 @@ public record ReplyResponse(
                 post.getContent(),
                 post.getUser().getId(),
                 post.getUser().getUsername(),
-                post.getParent() != null ? post.getParent().getId() : null,
+                post.getParentId(),
                 post.getCreatedAt(),
                 post.getModifiedAt()
         );
