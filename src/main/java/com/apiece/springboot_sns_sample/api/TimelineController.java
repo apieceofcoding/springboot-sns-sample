@@ -26,8 +26,7 @@ public class TimelineController {
             @RequestParam(defaultValue = "50") int limit
     ) {
         List<Post> posts = timelineService.getTimeline(user, limit);
-        return posts.stream()
-                .map(postService::enrichWithViewCount)
+        return postService.enrichWithUserContext(posts, user).stream()
                 .map(PostResponse::from)
                 .toList();
     }

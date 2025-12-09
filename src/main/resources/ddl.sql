@@ -40,6 +40,7 @@ CREATE TABLE posts (
     repost_id    BIGINT,
     repost_count INTEGER NOT NULL DEFAULT 0,
     like_count   INTEGER NOT NULL DEFAULT 0,
+    reply_count  INTEGER NOT NULL DEFAULT 0,
     view_count   BIGINT NOT NULL DEFAULT 0,
     media_ids    BIGINT[],
     created_at   TIMESTAMP(6) NOT NULL,

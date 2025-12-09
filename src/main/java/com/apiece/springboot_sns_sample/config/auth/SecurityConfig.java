@@ -14,6 +14,11 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.session.FindByIndexNameSessionRepository;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisIndexedHttpSession;
 import org.springframework.session.security.SpringSessionBackedSessionRegistry;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableRedisIndexedHttpSession(maxInactiveIntervalInSeconds = 1800)
@@ -22,6 +27,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionRegistry sessionRegistry, AuthSuccessHandler authSuccessHandler) {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(form -> form
@@ -62,5 +68,18 @@ public class SecurityConfig {
     @Bean
     public SessionRegistry sessionRegistry(FindByIndexNameSessionRepository<?> sessionRepository) {
         return new SpringSessionBackedSessionRegistry<>(sessionRepository);
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

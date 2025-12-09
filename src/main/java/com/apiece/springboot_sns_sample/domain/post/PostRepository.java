@@ -22,4 +22,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     boolean existsByUserIdAndQuoteIdAndDeletedAtIsNull(Long userId, Long quoteId);
 
     boolean existsByUserIdAndRepostIdAndDeletedAtIsNull(Long userId, Long repostId);
+
+    Optional<Post> findByUserIdAndRepostIdAndDeletedAtIsNull(Long userId, Long repostId);
 }

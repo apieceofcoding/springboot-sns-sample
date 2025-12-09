@@ -1,5 +1,7 @@
 package com.apiece.springboot_sns_sample.domain.post;
 
+import com.apiece.springboot_sns_sample.domain.like.Like;
+import com.apiece.springboot_sns_sample.domain.like.LikeRepository;
 import com.apiece.springboot_sns_sample.domain.media.Media;
 import com.apiece.springboot_sns_sample.domain.media.MediaRepository;
 import com.apiece.springboot_sns_sample.domain.postview.PostViewService;
@@ -19,6 +21,7 @@ public class PostService {
     private final PostViewService postViewService;
     private final MediaRepository mediaRepository;
     private final TimelineService timelineService;
+    private final LikeRepository likeRepository;
 
     public Post createPost(String content, List<Long> mediaIds, User user) {
         if (mediaIds != null && !mediaIds.isEmpty()) {
@@ -105,6 +108,28 @@ public class PostService {
     public List<PostWithViewCount> enrichWithViewCount(List<Post> posts) {
         return posts.stream()
                 .map(this::enrichWithViewCount)
+                .toList();
+    }
+
+    public PostWithUserContext enrichWithUserContext(Post post, User user) {
+        Long viewCount = postViewService.getPostView(post.getId());
+
+        // Check if user liked this post
+        var like = likeRepository.findByUserIdAndPostIdAndDeletedAtIsNull(user.getId(), post.getId());
+        boolean isLikedByMe = like.isPresent();
+        Long likeIdByMe = like.map(Like::getId).orElse(null);
+
+        // Check if user reposted this post
+        var repost = postRepository.findByUserIdAndRepostIdAndDeletedAtIsNull(user.getId(), post.getId());
+        boolean isRepostedByMe = repost.isPresent();
+        Long repostIdByMe = repost.map(Post::getId).orElse(null);
+
+        return new PostWithUserContext(post, viewCount, isLikedByMe, likeIdByMe, isRepostedByMe, repostIdByMe);
+    }
+
+    public List<PostWithUserContext> enrichWithUserContext(List<Post> posts, User user) {
+        return posts.stream()
+                .map(post -> enrichWithUserContext(post, user))
                 .toList();
     }
 }

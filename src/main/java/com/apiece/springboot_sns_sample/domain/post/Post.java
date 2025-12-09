@@ -43,6 +43,9 @@ public class Post extends BaseEntity {
     private Integer likeCount = 0;
 
     @Column(nullable = false)
+    private Integer replyCount = 0;
+
+    @Column(nullable = false)
     private Long viewCount = 0L;
 
     @Column(name = "media_ids", columnDefinition = "bigint[]")
@@ -54,6 +57,7 @@ public class Post extends BaseEntity {
         post.user = user;
         post.repostCount = 0;
         post.likeCount = 0;
+        post.replyCount = 0;
         post.viewCount = 0L;
         post.mediaIds = mediaIds;
         return post;
@@ -103,6 +107,16 @@ public class Post extends BaseEntity {
     public void decrementLikeCount() {
         if (this.likeCount > 0) {
             this.likeCount--;
+        }
+    }
+
+    public void incrementReplyCount() {
+        this.replyCount++;
+    }
+
+    public void decrementReplyCount() {
+        if (this.replyCount > 0) {
+            this.replyCount--;
         }
     }
 

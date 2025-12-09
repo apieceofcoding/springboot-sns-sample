@@ -30,6 +30,7 @@ public class ProfileController {
 
         return postsWithViewCount.stream()
                 .sorted(comparing(pvc -> pvc.post().getCreatedAt(), reverseOrder()))
+                .map(pvc -> postService.enrichWithUserContext(pvc.post(), user))
                 .map(PostResponse::from)
                 .toList();
     }
@@ -44,7 +45,7 @@ public class ProfileController {
     @GetMapping("/api/v1/profile/likes")
     public List<PostResponse> getMyLikedPosts(@AuthUser User user) {
         return likeService.getLikesByUserId(user.getId()).stream()
-                .map(like -> postService.enrichWithViewCount(like.getPost()))
+                .map(like -> postService.enrichWithUserContext(like.getPost(), user))
                 .map(PostResponse::from)
                 .toList();
     }

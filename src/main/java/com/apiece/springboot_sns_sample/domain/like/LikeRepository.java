@@ -14,4 +14,6 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     List<Like> findByUserIdAndDeletedAtIsNullOrderByCreatedAtDesc(Long userId);
 
     boolean existsByUserIdAndPostIdAndDeletedAtIsNull(Long userId, Long postId);
+
+    Optional<Like> findByUserIdAndPostIdAndDeletedAtIsNull(Long userId, Long postId);
 }

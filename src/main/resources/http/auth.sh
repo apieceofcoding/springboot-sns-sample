@@ -4,7 +4,7 @@ BASE_URL="http://localhost:8080"
 
 # Login
 echo "=== Login ==="
-curl -X POST "${BASE_URL}/login" \
+curl -X POST "${BASE_URL}/api/v1/login" \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "username=testuser&password=password123" \
   -c cookies.txt \
@@ -22,7 +22,7 @@ echo -e "\n\n"
 
 # Logout
 echo "=== Logout ==="
-curl -X POST "${BASE_URL}/logout" \
+curl -X POST "${BASE_URL}/api/v1/logout" \
   -b cookies.txt \
   -c cookies.txt \
   -v
