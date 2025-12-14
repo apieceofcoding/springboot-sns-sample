@@ -1,14 +1,18 @@
 package com.apiece.springboot_sns_sample.config.auth;
 
+import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
+import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.jackson.SecurityJacksonModules;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.session.FindByIndexNameSessionRepository;
@@ -17,12 +21,20 @@ import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 
 @Configuration
 @EnableRedisIndexedHttpSession(maxInactiveIntervalInSeconds = 1800)
-public class SecurityConfig {
+public class SecurityConfig implements BeanClassLoaderAware {
+
+    private ClassLoader classLoader;
+
+    @Override
+    public void setBeanClassLoader(@NonNull ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionRegistry sessionRegistry, AuthSuccessHandler authSuccessHandler) {
@@ -37,12 +49,10 @@ public class SecurityConfig {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/v1/logout") // POST
-                        .logoutSuccessHandler(((request, response, authentication) ->  response.setStatus(HttpStatus.OK.value())))
+                        .logoutSuccessHandler(((request, response, authentication) -> response.setStatus(HttpStatus.OK.value())))
                         .invalidateHttpSession(true)
-                        .deleteCookies("SESSION")
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(2)
                         .maxSessionsPreventsLogin(false)
                         .sessionRegistry(sessionRegistry)
@@ -68,6 +78,12 @@ public class SecurityConfig {
     @Bean
     public SessionRegistry sessionRegistry(FindByIndexNameSessionRepository<?> sessionRepository) {
         return new SpringSessionBackedSessionRegistry<>(sessionRepository);
+    }
+
+    @Bean
+    public RedisSerializer<Object> springSessionDefaultRedisSerializer() {
+        JsonMapper jsonMapper = JsonMapper.builder().addModules(SecurityJacksonModules.getModules(classLoader)).build();
+        return new GenericJacksonJsonRedisSerializer(jsonMapper);
     }
 
     @Bean
