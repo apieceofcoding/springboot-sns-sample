@@ -22,7 +22,7 @@ public class TimelineService {
     private final PostRepository postRepository;
 
     public void fanOutToFollowers(Long postId, User author) {
-        FollowCount followCount = followCountService.getFollowCount(author);
+        FollowCount followCount = followCountService.getFollowCount(author.getId());
 
         timelineRepository.addPostToTimeline(author.getId(), postId);
 

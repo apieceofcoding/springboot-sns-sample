@@ -17,7 +17,7 @@ public class FollowCountController {
 
     @GetMapping("/api/v1/follow_counts")
     public FollowCountResponse getFollowCount(@AuthUser User user) {
-        FollowCount followCount = followCountService.getFollowCount(user);
+        FollowCount followCount = followCountService.getFollowCount(user.getId());
         return new FollowCountResponse(followCount.getFollowersCount(), followCount.getFolloweesCount());
     }
 }

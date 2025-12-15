@@ -33,26 +33,6 @@ public class FollowCount extends BaseEntity {
         return followCount;
     }
 
-    public void incrementFollowersCount() {
-        this.followersCount++;
-    }
-
-    public void decrementFollowersCount() {
-        if (this.followersCount > 0) {
-            this.followersCount--;
-        }
-    }
-
-    public void incrementFolloweesCount() {
-        this.followeesCount++;
-    }
-
-    public void decrementFolloweesCount() {
-        if (this.followeesCount > 0) {
-            this.followeesCount--;
-        }
-    }
-
     public boolean isCeleb() {
         return this.followersCount >= 10000;
     }
