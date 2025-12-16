@@ -36,9 +36,12 @@ public class PostController {
     }
 
     @GetMapping("/api/v1/posts/{id}")
-    public PostResponse getPostById(@PathVariable Long id) {
-        PostWithViewCount postWithViewCount = postService.getPostByIdWithPostViewIncrement(id);
-        return PostResponse.from(postWithViewCount);
+    public PostResponse getPostById(
+            @PathVariable Long id,
+            @AuthUser User user
+    ) {
+        Post post = postService.getPostById(id);
+        return PostResponse.from(postService.enrichWithUserContext(post, user));
     }
 
     @PutMapping("/api/v1/posts/{id}")
