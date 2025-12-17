@@ -19,16 +19,17 @@ public class RepostService {
 
     @Transactional
     public Post createRepost(Long repostId, User user) {
-        Post originalPost = postRepository.findByIdAndDeletedAtIsNull(repostId)
+        postRepository.findByIdAndDeletedAtIsNull(repostId)
                 .orElseThrow(() -> new IllegalArgumentException("Post for repost not found: " + repostId));
 
         if (postRepository.existsByUserIdAndRepostIdAndDeletedAtIsNull(user.getId(), repostId)) {
             throw new IllegalArgumentException("You have already reposted this post");
         }
 
-        originalPost.incrementRepostCount();
         Post repost = Post.createRepost(user, repostId);
         Post savedRepost = postRepository.save(repost);
+
+        postRepository.incrementRepostCount(repostId);
 
         timelineService.fanOutToFollowers(savedRepost.getId(), user);
 
@@ -58,10 +59,7 @@ public class RepostService {
             throw new IllegalArgumentException("You are not authorized to delete this repost");
         }
 
-        Post originalPost = postRepository.findByIdAndDeletedAtIsNull(repost.getRepostId())
-                .orElseThrow(() -> new IllegalArgumentException("Original post not found: " + repost.getRepostId()));
-        originalPost.decrementRepostCount();
         repost.delete();
-        postRepository.save(repost);
+        postRepository.decrementRepostCount(repost.getRepostId());
     }
 }

@@ -19,16 +19,17 @@ public class QuoteService {
 
     @Transactional
     public Post createQuote(Long quoteId, String content, User user) {
-        Post quotedPost = postRepository.findByIdAndDeletedAtIsNull(quoteId)
+        postRepository.findByIdAndDeletedAtIsNull(quoteId)
                 .orElseThrow(() -> new IllegalArgumentException("Post for quote not found: " + quoteId));
 
         if (postRepository.existsByUserIdAndQuoteIdAndDeletedAtIsNull(user.getId(), quoteId)) {
             throw new IllegalArgumentException("You have already quoted this post");
         }
 
-        quotedPost.incrementRepostCount();
         Post quote = Post.createQuote(content, user, quoteId);
         Post savedQuote = postRepository.save(quote);
+
+        postRepository.incrementRepostCount(quoteId);
 
         timelineService.fanOutToFollowers(savedQuote.getId(), user);
 
@@ -58,10 +59,7 @@ public class QuoteService {
             throw new IllegalArgumentException("You are not authorized to delete this quote");
         }
 
-        Post quotedPost = postRepository.findByIdAndDeletedAtIsNull(quote.getQuoteId())
-                .orElseThrow(() -> new IllegalArgumentException("Quoted post not found: " + quote.getQuoteId()));
-        quotedPost.decrementRepostCount();
         quote.delete();
-        postRepository.save(quote);
+        postRepository.decrementRepostCount(quote.getQuoteId());
     }
 }

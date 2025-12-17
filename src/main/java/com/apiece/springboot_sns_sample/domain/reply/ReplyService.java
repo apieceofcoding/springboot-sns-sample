@@ -17,12 +17,15 @@ public class ReplyService {
     private final PostRepository postRepository;
     private final TimelineService timelineService;
 
+    @Transactional
     public Post createReply(Long parentId, String content, User user) {
         postRepository.findByIdAndDeletedAtIsNull(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("Parent post not found: " + parentId));
 
         Post reply = Post.createReply(content, user, parentId);
         Post savedReply = postRepository.save(reply);
+
+        postRepository.incrementReplyCount(parentId);
 
         timelineService.fanOutToFollowers(savedReply.getId(), user);
 
@@ -54,6 +57,7 @@ public class ReplyService {
         return reply;
     }
 
+    @Transactional
     public void deleteReply(Long replyId, User user) {
         Post reply = postRepository.findByIdAndDeletedAtIsNull(replyId)
                 .orElseThrow(() -> new IllegalArgumentException("Reply not found: " + replyId));
@@ -67,6 +71,6 @@ public class ReplyService {
         }
 
         reply.delete();
-        postRepository.save(reply);
+        postRepository.decrementReplyCount(reply.getParentId());
     }
 }

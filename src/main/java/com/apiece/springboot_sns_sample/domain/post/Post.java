@@ -90,36 +90,6 @@ public class Post extends BaseEntity {
         return this.getCreatedAt().isBefore(oneHourAgo);
     }
 
-    public void incrementRepostCount() {
-        this.repostCount++;
-    }
-
-    public void decrementRepostCount() {
-        if (this.repostCount > 0) {
-            this.repostCount--;
-        }
-    }
-
-    public void incrementLikeCount() {
-        this.likeCount++;
-    }
-
-    public void decrementLikeCount() {
-        if (this.likeCount > 0) {
-            this.likeCount--;
-        }
-    }
-
-    public void incrementReplyCount() {
-        this.replyCount++;
-    }
-
-    public void decrementReplyCount() {
-        if (this.replyCount > 0) {
-            this.replyCount--;
-        }
-    }
-
     public void updateViewCount(Long viewCount) {
         this.viewCount = viewCount;
     }

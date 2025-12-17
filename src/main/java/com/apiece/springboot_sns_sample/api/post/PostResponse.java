@@ -1,8 +1,8 @@
 package com.apiece.springboot_sns_sample.api.post;
 
 import com.apiece.springboot_sns_sample.domain.post.Post;
-import com.apiece.springboot_sns_sample.domain.post.PostWithViewCount;
 import com.apiece.springboot_sns_sample.domain.post.PostWithUserContext;
+import com.apiece.springboot_sns_sample.domain.post.PostWithViewCount;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,7 +15,6 @@ public record PostResponse(
         Integer repostCount,
         Integer likeCount,
         Integer replyCount,
-        Integer quoteCount,
         Long viewCount,
         List<Long> mediaIds,
         Long parentId,
@@ -33,7 +32,8 @@ public record PostResponse(
         PostResponse parentPost,
         RepostedBy repostedBy
 ) {
-    public record RepostedBy(Long userId, String username) {}
+    public record RepostedBy(Long userId, String username) {
+    }
 
     public static PostResponse from(Post post) {
         return new PostResponse(
@@ -44,7 +44,6 @@ public record PostResponse(
                 post.getRepostCount(),
                 post.getLikeCount(),
                 post.getReplyCount(),
-                0, // quoteCount - TODO: add to Post entity if needed
                 post.getViewCount(),
                 post.getMediaIds(),
                 post.getParentId(),
@@ -73,7 +72,6 @@ public record PostResponse(
                 post.getRepostCount(),
                 post.getLikeCount(),
                 post.getReplyCount(),
-                0,
                 postWithViewCount.viewCount(),
                 post.getMediaIds(),
                 post.getParentId(),
@@ -126,7 +124,6 @@ public record PostResponse(
                 post.getRepostCount(),
                 post.getLikeCount(),
                 post.getReplyCount(),
-                0,
                 ctx.viewCount(),
                 post.getMediaIds(),
                 post.getParentId(),
@@ -155,7 +152,6 @@ public record PostResponse(
                 post.getRepostCount(),
                 post.getLikeCount(),
                 post.getReplyCount(),
-                0,
                 post.getViewCount(),
                 post.getMediaIds(),
                 post.getParentId(),

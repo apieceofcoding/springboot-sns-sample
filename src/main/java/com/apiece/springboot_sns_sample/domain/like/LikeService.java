@@ -1,6 +1,7 @@
 package com.apiece.springboot_sns_sample.domain.like;
 
 import com.apiece.springboot_sns_sample.domain.post.Post;
+import com.apiece.springboot_sns_sample.domain.post.PostRepository;
 import com.apiece.springboot_sns_sample.domain.post.PostService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import java.util.List;
 public class LikeService {
 
     private final LikeRepository likeRepository;
+    private final PostRepository postRepository;
     private final PostService postService;
 
     @Transactional
@@ -24,9 +26,12 @@ public class LikeService {
             throw new IllegalArgumentException("You have already liked this post");
         }
 
-        post.incrementLikeCount();
         Like like = Like.create(user, post);
-        return likeRepository.save(like);
+        Like newLike = likeRepository.save(like);
+
+        postRepository.incrementLikeCount(postId);
+
+        return newLike;
     }
 
     public List<Like> getAllLikes() {
@@ -39,16 +44,15 @@ public class LikeService {
     }
 
     @Transactional
-    public void deleteLike(Long id, User user) {
+    public void     deleteLike(Long id, User user) {
         Like like = getLikeById(id);
 
         if (!like.getUser().getId().equals(user.getId())) {
             throw new IllegalArgumentException("You are not authorized to delete this like");
         }
 
-        like.getPost().decrementLikeCount();
         like.delete();
-        likeRepository.save(like);
+        postRepository.decrementLikeCount(like.getPost().getId());
     }
 
     public List<Like> getLikesByUserId(Long userId) {
