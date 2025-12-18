@@ -21,7 +21,10 @@ import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import tools.jackson.databind.DefaultTyping;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import java.util.List;
 
@@ -82,7 +85,17 @@ public class SecurityConfig implements BeanClassLoaderAware {
 
     @Bean
     public RedisSerializer<Object> springSessionDefaultRedisSerializer() {
-        JsonMapper jsonMapper = JsonMapper.builder().addModules(SecurityJacksonModules.getModules(classLoader)).build();
+        PolymorphicTypeValidator validator = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Object.class)
+                .allowIfSubType("java.")
+                .allowIfSubType("org.springframework.")
+                .build();
+
+        JsonMapper jsonMapper = JsonMapper.builder()
+                .addModules(SecurityJacksonModules.getModules(classLoader))
+                .activateDefaultTyping(validator, DefaultTyping.NON_FINAL)
+                .build();
+
         return new GenericJacksonJsonRedisSerializer(jsonMapper);
     }
 

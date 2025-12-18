@@ -21,10 +21,16 @@ public class User extends BaseEntity {
 
     private String password;
 
+    private Long profileMediaId;
+
     public static User create(String username, String password) {
         User user = new User();
         user.username = username;
         user.password = password;
         return user;
+    }
+
+    public void updateProfileMediaId(Long profileMediaId) {
+        this.profileMediaId = profileMediaId;
     }
 }

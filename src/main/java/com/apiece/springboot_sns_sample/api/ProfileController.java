@@ -1,15 +1,20 @@
 package com.apiece.springboot_sns_sample.api;
 
+import com.apiece.springboot_sns_sample.api.media.MediaInitResponse;
 import com.apiece.springboot_sns_sample.api.post.PostResponse;
 import com.apiece.springboot_sns_sample.api.reply.ReplyResponse;
+import com.apiece.springboot_sns_sample.api.user.ProfileImageInitRequest;
+import com.apiece.springboot_sns_sample.api.user.ProfileImageUpdateRequest;
+import com.apiece.springboot_sns_sample.api.user.UserResponse;
 import com.apiece.springboot_sns_sample.config.auth.AuthUser;
 import com.apiece.springboot_sns_sample.domain.like.LikeService;
+import com.apiece.springboot_sns_sample.domain.media.PresignedUrl;
 import com.apiece.springboot_sns_sample.domain.post.PostService;
 import com.apiece.springboot_sns_sample.domain.post.PostWithViewCount;
 import com.apiece.springboot_sns_sample.domain.user.User;
+import com.apiece.springboot_sns_sample.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +28,7 @@ public class ProfileController {
 
     private final PostService postService;
     private final LikeService likeService;
+    private final UserService userService;
 
     @GetMapping("/api/v1/profile/posts")
     public List<PostResponse> getMyPosts(@AuthUser User user) {
@@ -48,5 +54,18 @@ public class ProfileController {
                 .map(like -> postService.enrichWithUserContext(like.getPost(), user))
                 .map(PostResponse::from)
                 .toList();
+    }
+
+    @PostMapping("/api/v1/profile/image/init")
+    public MediaInitResponse initProfileImage(@AuthUser User user, @RequestBody ProfileImageInitRequest request) {
+        PresignedUrl presignedUrl = userService.initProfileImage(request.fileSize(), user);
+        return MediaInitResponse.from(presignedUrl);
+    }
+
+    @PostMapping("/api/v1/profile/image/uploaded")
+    public UserResponse uploadedProfileImage(@AuthUser User user, @RequestBody ProfileImageUpdateRequest request) {
+        User updatedUser = userService.updateProfileImage(request.mediaId(), user);
+        String profileImageUrl = userService.getProfileImageUrl(updatedUser);
+        return UserResponse.from(updatedUser, profileImageUrl);
     }
 }

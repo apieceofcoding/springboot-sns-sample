@@ -8,6 +8,7 @@ public record RepostResponse(
         Long id,
         Long userId,
         String username,
+        Long userProfileMediaId,
         Long repostId,
         LocalDateTime createdAt
 ) {
@@ -16,6 +17,7 @@ public record RepostResponse(
                 repost.getId(),
                 repost.getUser().getId(),
                 repost.getUser().getUsername(),
+                repost.getUser().getProfileMediaId(),
                 repost.getRepostId(),
                 repost.getCreatedAt()
         );

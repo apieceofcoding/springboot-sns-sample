@@ -10,6 +10,7 @@ public record ReplyResponse(
         String content,
         Long userId,
         String username,
+        Long userProfileMediaId,
         Long parentId,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
@@ -20,6 +21,7 @@ public record ReplyResponse(
                 post.getContent(),
                 post.getUser().getId(),
                 post.getUser().getUsername(),
+                post.getUser().getProfileMediaId(),
                 post.getParentId(),
                 post.getCreatedAt(),
                 post.getModifiedAt()

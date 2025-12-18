@@ -31,7 +31,7 @@ public class Media extends BaseEntity {
     @Column(nullable = false)
     private MediaStatus status;
 
-    @Column(name = "user_id")
+    @Column
     private Long userId;
 
     @Column(length = 500)

@@ -29,8 +29,12 @@ public class MediaService {
     private final RustFsProperties rustFsProperties;
 
     public PresignedUrl initMedia(MediaType mediaType, Long fileSize, User user) {
+        return initMedia(mediaType, fileSize, user, "posts");
+    }
+
+    public PresignedUrl initMedia(MediaType mediaType, Long fileSize, User user, String subPath) {
         String filename = UUID.randomUUID() + mediaType.fileExtension();
-        String path = String.format("users/%s/%s", user.getId(), filename);
+        String path = String.format("users/%s/%s/%s", user.getId(), subPath, filename);
 
         if (fileSize != null && fileSize > MULTIPART_THRESHOLD) {
             return initMultipartUpload(user, path, mediaType, fileSize);

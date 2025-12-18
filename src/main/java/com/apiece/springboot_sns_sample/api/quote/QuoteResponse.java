@@ -9,6 +9,7 @@ public record QuoteResponse(
         String content,
         Long userId,
         String username,
+        Long userProfileMediaId,
         Long quoteId,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
@@ -19,6 +20,7 @@ public record QuoteResponse(
                 post.getContent(),
                 post.getUser().getId(),
                 post.getUser().getUsername(),
+                post.getUser().getProfileMediaId(),
                 post.getQuoteId(),
                 post.getCreatedAt(),
                 post.getModifiedAt()
