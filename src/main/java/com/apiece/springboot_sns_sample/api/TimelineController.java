@@ -2,8 +2,8 @@ package com.apiece.springboot_sns_sample.api;
 
 import com.apiece.springboot_sns_sample.api.post.PostResponse;
 import com.apiece.springboot_sns_sample.config.auth.AuthUser;
-import com.apiece.springboot_sns_sample.domain.post.Post;
 import com.apiece.springboot_sns_sample.domain.post.PostService;
+import com.apiece.springboot_sns_sample.domain.timeline.TimelinePage;
 import com.apiece.springboot_sns_sample.domain.timeline.TimelineService;
 import com.apiece.springboot_sns_sample.domain.user.User;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +21,15 @@ public class TimelineController {
     private final PostService postService;
 
     @GetMapping("/api/v1/timelines")
-    public List<PostResponse> getTimeline(
+    public TimelineResponse getTimeline(
             @AuthUser User user,
-            @RequestParam(defaultValue = "50") int limit
+            @RequestParam(required = false) Double cursor,
+            @RequestParam(defaultValue = "20") int limit
     ) {
-        List<Post> posts = timelineService.getTimeline(user, limit);
-        return postService.enrichWithUserContext(posts, user).stream()
+        TimelinePage page = timelineService.getTimeline(user, cursor, limit);
+        List<PostResponse> posts = postService.enrichWithUserContext(page.posts(), user).stream()
                 .map(PostResponse::from)
                 .toList();
+        return new TimelineResponse(posts, page.nextCursor(), page.hasMore());
     }
 }

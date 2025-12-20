@@ -11,6 +11,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+
+import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -34,30 +39,40 @@ public class TimelineService {
 
         // Fanout on Write for non-celeb users
         List<Follow> follows = followRepository.findByFolloweeIdAndDeletedAtIsNull(author.getId());
-        follows.forEach(follow -> {
-            Long followerId = follow.getFollowerId();
-            timelineRepository.addPostToTimeline(followerId, postId);
-        });
+        follows.parallelStream()
+                .forEach(follow -> timelineRepository.addPostToTimeline(follow.getFollowerId(), postId));
     }
 
-    public List<Post> getTimeline(User user, int limit) {
-        // Fanout on Read for following celebs
+    public TimelinePage     getTimeline(User user, Double cursor, int limit) {
+        // Fanout on Read for following celebs (addIfAbsent로 중복 방지)
         List<Follow> follows = followRepository.findByFollowerIdAndDeletedAtIsNull(user.getId());
-        follows.stream()
+        follows.parallelStream()
                 .map(Follow::getFolloweeId)
                 .map(followCountService::getFollowCount)
                 .filter(FollowCount::isCeleb)
                 .flatMap(followCount -> timelineRepository.getCelebPosts(followCount.getUserId(), 5).stream())
-                .forEach(postId -> timelineRepository.addPostToTimeline(user.getId(), postId));
+                .forEach(postId -> timelineRepository.addPostToTimelineIfAbsent(user.getId(), postId));
 
-        List<Long> timelinePostIds = timelineRepository.getTimeline(user.getId(), limit);
+        List<TimelineEntry> entries = timelineRepository.getTimeline(user.getId(), cursor, limit);
 
-        if (timelinePostIds.isEmpty()) return List.of();
+        if (entries.isEmpty()) {
+            return new TimelinePage(List.of(), null, false);
+        }
 
-        return postRepository.findAllByIdInAndDeletedAtIsNull(timelinePostIds).stream()
-                .distinct()
-                .sorted((p1, p2) -> p2.getCreatedAt().compareTo(p1.getCreatedAt()))
-                .limit(limit)
+        List<Long> postIds = entries.stream().map(TimelineEntry::postId).toList();
+        Map<Long, Post> postMap = postRepository.findAllByIdInAndDeletedAtIsNull(postIds).stream()
+                .collect(toMap(Post::getId, Function.identity()));
+
+        // entries 순서대로 Post를 가져옴 (score 순서 유지)
+        List<Post> posts = entries.stream()
+                .map(entry -> postMap.get(entry.postId()))
+                .filter(Objects::nonNull)
                 .toList();
+
+        // 다음 cursor는 마지막 항목의 score
+        Double nextCursor = entries.getLast().score();
+        boolean hasMore = entries.size() >= limit;
+
+        return new TimelinePage(posts, nextCursor, hasMore);
     }
 }
