@@ -4,7 +4,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.serializer.GenericJacksonJsonRedisSerializer;
+import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -21,10 +21,8 @@ import org.springframework.session.security.SpringSessionBackedSessionRegistry;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import tools.jackson.databind.DefaultTyping;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import tools.jackson.databind.jsontype.PolymorphicTypeValidator;
 
 import java.util.List;
 
@@ -85,18 +83,18 @@ public class SecurityConfig implements BeanClassLoaderAware {
 
     @Bean
     public RedisSerializer<Object> springSessionDefaultRedisSerializer() {
-        PolymorphicTypeValidator validator = BasicPolymorphicTypeValidator.builder()
-                .allowIfBaseType(Object.class)
-                .allowIfSubType("java.")
-                .allowIfSubType("org.springframework.")
-                .build();
+        var typeValidatorBuilder = BasicPolymorphicTypeValidator.builder()
+                .allowIfSubType("java.lang.")
+                .allowIfSubType("java.util.")
+                .allowIfSubType("java.time.")
+                .allowIfSubType("org.springframework.session.")
+                .allowIfSubType("com.apiece.");
 
         JsonMapper jsonMapper = JsonMapper.builder()
-                .addModules(SecurityJacksonModules.getModules(classLoader))
-                .activateDefaultTyping(validator, DefaultTyping.NON_FINAL)
+                .addModules(SecurityJacksonModules.getModules(classLoader, typeValidatorBuilder))
                 .build();
 
-        return new GenericJacksonJsonRedisSerializer(jsonMapper);
+        return new JacksonJsonRedisSerializer<>(jsonMapper, Object.class);
     }
 
     @Bean

@@ -43,7 +43,7 @@ public class TimelineService {
                 .forEach(follow -> timelineRepository.addPostToTimeline(follow.getFollowerId(), postId));
     }
 
-    public TimelinePage     getTimeline(User user, Double cursor, int limit) {
+    public TimelinePage getTimeline(User user, Double cursor, int limit) {
         // Fanout on Read for following celebs (addIfAbsent로 중복 방지)
         List<Follow> follows = followRepository.findByFollowerIdAndDeletedAtIsNull(user.getId());
         follows.parallelStream()
