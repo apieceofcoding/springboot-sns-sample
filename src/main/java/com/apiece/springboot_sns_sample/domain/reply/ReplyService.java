@@ -18,11 +18,11 @@ public class ReplyService {
     private final TimelineService timelineService;
 
     @Transactional
-    public Post createReply(Long parentId, String content, User user) {
+    public Post createReply(Long parentId, String content, List<Long> mediaIds, User user) {
         postRepository.findByIdAndDeletedAtIsNull(parentId)
                 .orElseThrow(() -> new IllegalArgumentException("Parent post not found: " + parentId));
 
-        Post reply = Post.createReply(content, user, parentId);
+        Post reply = Post.createReply(content, user, parentId, mediaIds);
         Post savedReply = postRepository.save(reply);
 
         postRepository.incrementReplyCount(parentId);

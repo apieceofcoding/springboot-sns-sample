@@ -63,8 +63,8 @@ public class Post extends BaseEntity {
         return post;
     }
 
-    public static Post createReply(String content, User user, Long parentId) {
-        Post post = create(content, user, null);
+    public static Post createReply(String content, User user, Long parentId, List<Long> mediaIds) {
+        Post post = create(content, user, mediaIds);
         post.parentId = parentId;
         return post;
     }

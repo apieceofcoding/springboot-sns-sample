@@ -13,6 +13,7 @@ public record MediaResponse(
         String path,
         MediaStatus status,
         Long userId,
+        Long fileSize,
         Map<String, Object> attributes,
         LocalDateTime createdAt,
         LocalDateTime modifiedAt
@@ -24,6 +25,7 @@ public record MediaResponse(
                 media.getPath(),
                 media.getStatus(),
                 media.getUserId(),
+                media.getFileSize(),
                 media.getAttributes(),
                 media.getCreatedAt(),
                 media.getModifiedAt()

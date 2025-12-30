@@ -76,6 +76,7 @@ CREATE TABLE media (
     status      VARCHAR(255) NOT NULL,
     user_id     BIGINT,
     upload_id   VARCHAR(500),
+    file_size   BIGINT,
     attributes  JSON,
     created_at  TIMESTAMP(6) NOT NULL,
     modified_at TIMESTAMP(6) NOT NULL,

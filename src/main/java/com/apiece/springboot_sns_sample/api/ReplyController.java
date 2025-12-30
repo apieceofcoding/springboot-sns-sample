@@ -24,7 +24,7 @@ public class ReplyController {
             @RequestBody ReplyCreateRequest request,
             @AuthUser User user
     ) {
-        Post reply = replyService.createReply(postId, request.content(), user);
+        Post reply = replyService.createReply(postId, request.content(), request.mediaIds(), user);
         return ReplyResponse.from(reply);
     }
 

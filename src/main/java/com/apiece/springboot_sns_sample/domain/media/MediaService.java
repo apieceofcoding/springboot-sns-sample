@@ -14,7 +14,9 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -40,7 +42,7 @@ public class MediaService {
             return initMultipartUpload(user, path, mediaType, fileSize);
         }
 
-        return initSingleUpload(user, path, mediaType);
+        return initSingleUpload(user, path, mediaType, fileSize);
     }
 
     public Media mediaUploaded(Long mediaId, List<MultipartUploaded> parts, User user) {
@@ -56,6 +58,10 @@ public class MediaService {
 
         if (media.getUploadId() != null && !CollectionUtils.isEmpty(parts)) {
             multipartService.completeMultipartUpload(media.getPath(), media.getUploadId(), parts);
+
+            Map<String, Object> attributes = new HashMap<>();
+            attributes.put("parts", parts);
+            media.updateAttributes(attributes);
         }
 
         media.updateStatus(MediaStatus.UPLOADED);
@@ -100,7 +106,7 @@ public class MediaService {
         return presignedRequest.url().toString();
     }
 
-    private PresignedUrl initSingleUpload(User user, String path, MediaType mediaType) {
+    private PresignedUrl initSingleUpload(User user, String path, MediaType mediaType, Long fileSize) {
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(rustFsProperties.bucket())
                 .key(path)
@@ -115,7 +121,7 @@ public class MediaService {
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
         String presignedUrl = presignedRequest.url().toString();
 
-        Media media = Media.create(mediaType, path, user.getId());
+        Media media = Media.create(mediaType, path, user.getId(), fileSize);
         media = mediaRepository.save(media);
 
         return PresignedUrl.forSingleUpload(media, presignedUrl);
@@ -128,7 +134,7 @@ public class MediaService {
                 fileSize
         );
 
-        Media media = Media.create(mediaType, path, user.getId(), uploadInfo.uploadId());
+        Media media = Media.create(mediaType, path, user.getId(), fileSize, uploadInfo.uploadId());
         media = mediaRepository.save(media);
 
         return PresignedUrl.forMultipartUpload(media, uploadInfo.uploadId(), uploadInfo.presignedUrlParts());
