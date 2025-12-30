@@ -18,6 +18,11 @@ public class FollowCountService {
                 .orElseThrow(() -> new IllegalStateException("FollowCount not found for user"));
     }
 
+    public FollowCount getFollowCountOrDefault(Long userId) {
+        return followCountRepository.findByUserIdAndDeletedAtIsNull(userId)
+                .orElse(FollowCount.createDefault(userId));
+    }
+
     @Transactional
     @Retryable(DataIntegrityViolationException.class)
     public void incrementFollowersCount(User user) {

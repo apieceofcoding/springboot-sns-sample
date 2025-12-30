@@ -51,4 +51,12 @@ public class FollowController {
                 .map(follow -> FollowResponse.from(follow, userService))
                 .toList();
     }
+
+    @GetMapping("/api/v1/follows/check/{followeeId}")
+    public boolean isFollowing(
+            @PathVariable Long followeeId,
+            @AuthUser User user
+    ) {
+        return followService.isFollowing(user, followeeId);
+    }
 }

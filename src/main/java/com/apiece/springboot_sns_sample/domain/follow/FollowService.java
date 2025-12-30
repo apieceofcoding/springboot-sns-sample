@@ -57,4 +57,8 @@ public class FollowService {
     public List<Follow> getFollowees(User user) {
         return followRepository.findByFollowerIdAndDeletedAtIsNull(user.getId());
     }
+
+    public boolean isFollowing(User user, Long followeeId) {
+        return followRepository.existsByFollowerIdAndFolloweeIdAndDeletedAtIsNull(user.getId(), followeeId);
+    }
 }

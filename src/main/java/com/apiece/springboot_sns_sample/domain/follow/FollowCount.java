@@ -33,6 +33,10 @@ public class FollowCount extends BaseEntity {
         return followCount;
     }
 
+    public static FollowCount createDefault(Long userId) {
+        return create(userId);
+    }
+
     public boolean isCeleb() {
         return this.followersCount >= 10000;
     }
