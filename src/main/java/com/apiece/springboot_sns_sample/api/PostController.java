@@ -7,7 +7,9 @@ import com.apiece.springboot_sns_sample.config.auth.AuthUser;
 import com.apiece.springboot_sns_sample.domain.post.Post;
 import com.apiece.springboot_sns_sample.domain.post.PostService;
 import com.apiece.springboot_sns_sample.domain.post.PostWithViewCount;
+import com.apiece.springboot_sns_sample.domain.postview.PostViewService;
 import com.apiece.springboot_sns_sample.domain.user.User;
+import org.springframework.http.ResponseEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PostViewService postViewService;
 
     @PostMapping("/api/v1/posts")
     public PostResponse createPost(
@@ -60,5 +63,11 @@ public class PostController {
             @AuthUser User user
     ) {
         postService.deletePost(id, user);
+    }
+
+    @PostMapping("/api/v1/posts/{id}/view")
+    public ResponseEntity<Void> incrementView(@PathVariable Long id) {
+        postViewService.incrementPostView(id);
+        return ResponseEntity.noContent().build();
     }
 }
