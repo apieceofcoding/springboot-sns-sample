@@ -41,7 +41,7 @@ public class Media extends BaseEntity {
     private Long fileSize;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "json")
+    @Column(columnDefinition = "jsonb")
     private Map<String, Object> attributes;
 
     public static Media create(MediaType mediaType, String path, Long userId, Long fileSize) {

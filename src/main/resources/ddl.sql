@@ -77,10 +77,11 @@ CREATE TABLE media (
     user_id     BIGINT,
     upload_id   VARCHAR(500),
     file_size   BIGINT,
-    attributes  JSON,
+    attributes  JSONB,
     created_at  TIMESTAMP(6) NOT NULL,
     modified_at TIMESTAMP(6) NOT NULL,
     deleted_at  TIMESTAMP(6)
 );
 
 CREATE INDEX idx_media_user_id_created_at_active ON media(user_id, created_at DESC) WHERE deleted_at IS NULL;
+CREATE INDEX idx_media_parts_gin ON media USING GIN ((attributes -> 'parts')) WHERE deleted_at IS NULL;
