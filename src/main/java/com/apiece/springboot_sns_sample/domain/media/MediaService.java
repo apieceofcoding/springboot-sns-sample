@@ -90,8 +90,10 @@ public class MediaService {
     }
 
     public String getPresignedUrl(Long id) {
-        Media media = getMediaById(id);
+        return getPresignedUrl(getMediaById(id));
+    }
 
+    public String getPresignedUrl(Media media) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(rustFsProperties.bucket())
                 .key(media.getPath())

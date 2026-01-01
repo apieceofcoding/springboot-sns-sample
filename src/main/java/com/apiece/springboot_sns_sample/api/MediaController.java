@@ -48,7 +48,7 @@ public class MediaController {
     @GetMapping("/api/v1/media/{id}/presigned-url")
     public PresignedUrlResponse getPresignedUrl(@PathVariable Long id) {
         Media media = mediaService.getMediaById(id);
-        String presignedUrl = mediaService.getPresignedUrl(id);
+        String presignedUrl = mediaService.getPresignedUrl(media);
         return new PresignedUrlResponse(presignedUrl, MediaResponse.from(media));
     }
 
