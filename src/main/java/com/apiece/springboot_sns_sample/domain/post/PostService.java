@@ -113,50 +113,7 @@ public class PostService {
     }
 
     public PostWithUserContext enrichWithUserContext(Post post, User user) {
-        Long viewCount = postViewService.getPostView(post.getId());
-
-        // Check if user liked this post
-        var like = likeRepository.findByUserIdAndPostIdAndDeletedAtIsNull(user.getId(), post.getId());
-        boolean isLikedByMe = like.isPresent();
-        Long likeIdByMe = like.map(Like::getId).orElse(null);
-
-        // Check if user reposted this post
-        var repost = postRepository.findByUserIdAndRepostIdAndDeletedAtIsNull(user.getId(), post.getId());
-        boolean isRepostedByMe = repost.isPresent();
-        Long repostIdByMe = repost.map(Post::getId).orElse(null);
-
-        // 관련 게시물 조회
-        Post repostedPost = null;
-        Post quotedPost = null;
-        Post parentPost = null;
-        Long repostedByUserId = null;
-        String repostedByUsername = null;
-
-        // 재게시인 경우 원본 게시물 조회
-        if (post.getRepostId() != null) {
-            repostedPost = postRepository.findByIdAndDeletedAtIsNull(post.getRepostId()).orElse(null);
-        }
-
-        // 인용인 경우 인용된 게시물 조회
-        if (post.getQuoteId() != null) {
-            quotedPost = postRepository.findByIdAndDeletedAtIsNull(post.getQuoteId()).orElse(null);
-        }
-
-        // 재게시 또는 인용한 사람 정보
-        if (post.getRepostId() != null || post.getQuoteId() != null) {
-            repostedByUserId = post.getUser().getId();
-            repostedByUsername = post.getUser().getUsername();
-        }
-
-        // 답글인 경우 부모 게시물 조회
-        if (post.getParentId() != null) {
-            parentPost = postRepository.findByIdAndDeletedAtIsNull(post.getParentId()).orElse(null);
-        }
-
-        return new PostWithUserContext(
-                post, viewCount, isLikedByMe, likeIdByMe, isRepostedByMe, repostIdByMe,
-                repostedPost, quotedPost, parentPost, repostedByUserId, repostedByUsername
-        );
+        return enrichWithUserContext(List.of(post), user).get(0);
     }
 
     public List<PostWithUserContext> enrichWithUserContext(List<Post> posts, User user) {
@@ -164,69 +121,56 @@ public class PostService {
             return List.of();
         }
 
-        // 1. 모든 게시물의 ID 수집
         List<Long> postIds = posts.stream().map(Post::getId).toList();
 
-        // 2. 관련 게시물 ID 수집 (repostId, quoteId, parentId)
-        Set<Long> relatedPostIds = new HashSet<>();
-        for (Post post : posts) {
-            if (post.getRepostId() != null) relatedPostIds.add(post.getRepostId());
-            if (post.getQuoteId() != null) relatedPostIds.add(post.getQuoteId());
-            if (post.getParentId() != null) relatedPostIds.add(post.getParentId());
-        }
+        // 관련 게시물 일괄 조회
+        Set<Long> relatedPostIds = posts.stream()
+                .flatMap(p -> java.util.stream.Stream.of(p.getRepostId(), p.getQuoteId(), p.getParentId()))
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
 
-        // 3. 관련 게시물 일괄 조회
-        Map<Long, Post> relatedPostsMap = new HashMap<>();
-        if (!relatedPostIds.isEmpty()) {
-            List<Post> relatedPosts = postRepository.findAllByIdInAndDeletedAtIsNull(new ArrayList<>(relatedPostIds));
-            relatedPostsMap = relatedPosts.stream()
-                    .collect(Collectors.toMap(Post::getId, p -> p));
-        }
+        Map<Long, Post> relatedPostsMap = relatedPostIds.isEmpty()
+                ? Map.of()
+                : postRepository.findAllByIdInAndDeletedAtIsNull(new ArrayList<>(relatedPostIds)).stream()
+                        .collect(Collectors.toMap(Post::getId, p -> p));
 
-        // 4. 사용자의 좋아요 정보 일괄 조회
-        List<Like> userLikes = likeRepository.findByUserIdAndPostIdInAndDeletedAtIsNull(user.getId(), postIds);
-        Map<Long, Like> likesMap = userLikes.stream()
+        // 사용자의 좋아요/재게시 정보 일괄 조회
+        Map<Long, Like> likesMap = likeRepository.findByUserIdAndPostIdInAndDeletedAtIsNull(user.getId(), postIds).stream()
                 .collect(Collectors.toMap(l -> l.getPost().getId(), l -> l));
 
-        // 5. 사용자의 재게시 정보 일괄 조회
-        List<Post> userReposts = postRepository.findByUserIdAndRepostIdInAndDeletedAtIsNull(user.getId(), postIds);
-        Map<Long, Post> repostsMap = userReposts.stream()
+        Map<Long, Post> repostsMap = postRepository.findByUserIdAndRepostIdInAndDeletedAtIsNull(user.getId(), postIds).stream()
                 .collect(Collectors.toMap(Post::getRepostId, p -> p));
 
-        // 6. 각 게시물에 대해 컨텍스트 정보 조합
-        Map<Long, Post> finalRelatedPostsMap = relatedPostsMap;
         return posts.stream()
-                .map(post -> {
-                    Long viewCount = postViewService.getPostView(post.getId());
-
-                    // 좋아요 정보
-                    Like like = likesMap.get(post.getId());
-                    boolean isLikedByMe = like != null;
-                    Long likeIdByMe = like != null ? like.getId() : null;
-
-                    // 재게시 정보
-                    Post userRepost = repostsMap.get(post.getId());
-                    boolean isRepostedByMe = userRepost != null;
-                    Long repostIdByMe = userRepost != null ? userRepost.getId() : null;
-
-                    // 관련 게시물
-                    Post repostedPost = post.getRepostId() != null ? finalRelatedPostsMap.get(post.getRepostId()) : null;
-                    Post quotedPost = post.getQuoteId() != null ? finalRelatedPostsMap.get(post.getQuoteId()) : null;
-                    Post parentPost = post.getParentId() != null ? finalRelatedPostsMap.get(post.getParentId()) : null;
-
-                    // 재게시 또는 인용한 사람 정보
-                    Long repostedByUserId = null;
-                    String repostedByUsername = null;
-                    if (post.getRepostId() != null || post.getQuoteId() != null) {
-                        repostedByUserId = post.getUser().getId();
-                        repostedByUsername = post.getUser().getUsername();
-                    }
-
-                    return new PostWithUserContext(
-                            post, viewCount, isLikedByMe, likeIdByMe, isRepostedByMe, repostIdByMe,
-                            repostedPost, quotedPost, parentPost, repostedByUserId, repostedByUsername
-                    );
-                })
+                .map(post -> buildPostWithUserContext(post, relatedPostsMap, likesMap, repostsMap))
                 .toList();
+    }
+
+    private PostWithUserContext buildPostWithUserContext(
+            Post post,
+            Map<Long, Post> relatedPostsMap,
+            Map<Long, Like> likesMap,
+            Map<Long, Post> repostsMap
+    ) {
+        Long viewCount = postViewService.getPostView(post.getId());
+
+        Like like = likesMap.get(post.getId());
+        Post userRepost = repostsMap.get(post.getId());
+
+        boolean isRepostOrQuote = post.getRepostId() != null || post.getQuoteId() != null;
+
+        return new PostWithUserContext(
+                post,
+                viewCount,
+                like != null,
+                like != null ? like.getId() : null,
+                userRepost != null,
+                userRepost != null ? userRepost.getId() : null,
+                post.getRepostId() != null ? relatedPostsMap.get(post.getRepostId()) : null,
+                post.getQuoteId() != null ? relatedPostsMap.get(post.getQuoteId()) : null,
+                post.getParentId() != null ? relatedPostsMap.get(post.getParentId()) : null,
+                isRepostOrQuote ? post.getUser().getId() : null,
+                isRepostOrQuote ? post.getUser().getUsername() : null
+        );
     }
 }

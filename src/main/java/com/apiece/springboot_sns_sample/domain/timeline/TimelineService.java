@@ -31,20 +31,19 @@ public class TimelineService {
 
         timelineRepository.addPostToTimeline(author.getId(), postId);
 
-        // If author is celeb, cache the post instead of fanout
         if (followCount.isCeleb()) {
             timelineRepository.addCelebPost(author.getId(), postId);
             return;
         }
 
-        // Fanout on Write for non-celeb users
+        // Fanout on Write (for non-celeb users)
         List<Follow> follows = followRepository.findByFolloweeIdAndDeletedAtIsNull(author.getId());
         follows.parallelStream()
                 .forEach(follow -> timelineRepository.addPostToTimeline(follow.getFollowerId(), postId));
     }
 
     public TimelinePage getTimeline(User user, Double cursor, int limit) {
-        // Fanout on Read for following celebs (addIfAbsent로 중복 방지)
+        // Fanout on Read (for following celebs)
         List<Follow> follows = followRepository.findByFollowerIdAndDeletedAtIsNull(user.getId());
         follows.parallelStream()
                 .map(Follow::getFolloweeId)
@@ -63,13 +62,11 @@ public class TimelineService {
         Map<Long, Post> postMap = postRepository.findAllByIdInAndDeletedAtIsNull(postIds).stream()
                 .collect(toMap(Post::getId, Function.identity()));
 
-        // entries 순서대로 Post를 가져옴 (score 순서 유지)
         List<Post> posts = entries.stream()
                 .map(entry -> postMap.get(entry.postId()))
                 .filter(Objects::nonNull)
                 .toList();
 
-        // 다음 cursor는 마지막 항목의 score
         Double nextCursor = entries.getLast().score();
         boolean hasMore = entries.size() >= limit;
 
