@@ -44,7 +44,7 @@ public class LikeService {
     }
 
     @Transactional
-    public void     deleteLike(Long id, User user) {
+    public void deleteLike(Long id, User user) {
         Like like = getLikeById(id);
 
         if (!like.getUser().getId().equals(user.getId())) {
