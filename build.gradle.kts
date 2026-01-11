@@ -3,6 +3,7 @@ plugins {
 	id("org.springframework.boot") version "4.0.0"
 	id("io.spring.dependency-management") version "1.1.7"
     id("io.freefair.lombok") version "9.1.0"
+	id("com.diffplug.spotless") version "8.1.0"
 }
 
 group = "com.apiece"
@@ -41,4 +42,51 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+
+spotless {
+	java {
+		target("src/**/*.java")
+		removeUnusedImports()
+		googleJavaFormat()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+
+	kotlinGradle {
+		target("*.gradle.kts")
+		ktlint()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+
+	json {
+		target("src/**/*.json", ".claude/**/*.json")
+		gson()
+			.indentWithSpaces(2)
+			.sortByKeys()
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+
+	yaml {
+		target("src/**/*.yaml", "src/**/*.yml")
+		jackson()
+			.yamlFeature("WRITE_DOC_START_MARKER", false)
+			.yamlFeature("MINIMIZE_QUOTES", true)
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+
+	format("markdown") {
+		target("*.md", ".claude/**/*.md")
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
+
+	format("misc") {
+		target("src/**/*.properties", "src/**/*.xml", "src/**/*.sql", "src/**/*.sh")
+		trimTrailingWhitespace()
+		endWithNewline()
+	}
 }
