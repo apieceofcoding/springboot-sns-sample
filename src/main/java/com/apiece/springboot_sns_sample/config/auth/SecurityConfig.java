@@ -41,7 +41,9 @@ public class SecurityConfig implements BeanClassLoaderAware {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionRegistry sessionRegistry, AuthSuccessHandler authSuccessHandler) {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.spa()
+                        .ignoringRequestMatchers("/api/v1/users/signup", "/api/v1/login", "/api/v1/sessions")
+                )
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(form -> form
                         .loginProcessingUrl("/api/v1/login") // POST, Content-Type: application/x-www-form-urlencoded
